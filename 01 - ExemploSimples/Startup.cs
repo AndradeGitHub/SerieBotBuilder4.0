@@ -48,20 +48,7 @@ namespace ExemploSimples
                 // The Memory Storage used here is for local bot debugging only. When the bot
                 // is restarted, anything stored in memory will be gone. 
                 IStorage dataStore = new MemoryStorage();
-
-                // The File data store, shown here, is suitable for bots that run on 
-                // a single machine and need durable state across application restarts.                 
-                // IStorage dataStore = new FileStorage(System.IO.Path.GetTempPath());
-
-                // For production bots use the Azure Table Store, Azure Blob, or 
-                // Azure CosmosDB storage provides, as seen below. To include any of 
-                // the Azure based storage providers, add the Microsoft.Bot.Builder.Azure 
-                // Nuget package to your solution. That package is found at:
-                //      https://www.nuget.org/packages/Microsoft.Bot.Builder.Azure/
-
-                // IStorage dataStore = new Microsoft.Bot.Builder.Azure.AzureTableStorage("AzureTablesConnectionString", "TableName");
-                // IStorage dataStore = new Microsoft.Bot.Builder.Azure.AzureBlobStorage("AzureBlobConnectionString", "containerName");
-
+                
                 options.Middleware.Add(new ConversationState<BotSimplesState>(dataStore));
             });
         }

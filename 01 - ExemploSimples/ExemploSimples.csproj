@@ -12,4 +12,10 @@
     <PackageReference Include="Microsoft.Bot.Builder.Prompts" Version="4.0.1-preview" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="wwwroot\default.htm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>

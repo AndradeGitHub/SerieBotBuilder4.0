@@ -10,15 +10,6 @@ namespace ExemploSimples
     public class BotSimples : IBot
     {
 
-        private TextPrompt promptNome;
-
-        public BotSimples()
-        {
-            this.promptNome = new TextPrompt();
-        }
-
-
-
         /// <summary>
         /// Every Conversation turn for our Bot will call this method. In here
         /// the bot checks the Activty type to verify it's a message, bumps the 
@@ -34,19 +25,20 @@ namespace ExemploSimples
             {
                 // Obtenho o estado da conversação.
                 BotSimplesState state = context.GetConversationState<BotSimplesState>();
+                TextPrompt promptNome = new TextPrompt();
 
                 if (!state.PergunteiNome)
                 {
                     state.PergunteiNome = true;
-                    await this.promptNome.Prompt(context, "Qual o seu nome ?");
+                    await promptNome.Prompt(context, "Qual o seu nome ?");
                 }
                 else
                 {
-                    TextResult nome = await this.promptNome.Recognize(context);
+                    TextResult nome = await promptNome.Recognize(context);
 
                     if (!nome.Succeeded())
                     {
-                        await this.promptNome.Prompt(context, "Desculpe, pode repetir ?");
+                        await promptNome.Prompt(context, "Desculpe, pode repetir ?");
                     }
                     else
                     {
