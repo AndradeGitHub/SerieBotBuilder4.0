@@ -9,6 +9,7 @@ using System;
 using System.Linq;
 using Microsoft.Recognizers.Text;
 using System.Collections.Generic;
+using static Microsoft.Bot.Builder.Prompts.DateTimeResult;
 
 namespace ExemploDialogo
 {
@@ -28,21 +29,21 @@ namespace ExemploDialogo
             dialogos.Add("marcarConsulta", new WaterfallStep[] {
                 async (dc, args, next) =>
                 {
-                    await dc.Prompt("texto","Qual o seu nome ?");
+                    await dc.Prompt("capturaTexto","Qual o seu nome ?");
                 },
                 async (dc, args, next) =>
                 {
-                     nomeCliente = ((TextResult)args).Value;
-                    await dc.Prompt("texto",$"{nomeCliente}, qual o convênio ?");
+                    nomeCliente = ((TextResult)args).Value;
+                    await dc.Prompt("capturaTexto",$"{nomeCliente}, qual o convênio ?");
                 },
                 async (dc, args, next) =>
                 {
-                     convenio = ((TextResult)args).Value;
-                    await dc.Prompt("dataHora","Certo... Qual o dia e horário ?");
+                    convenio = ((TextResult)args).Value;
+                    await dc.Prompt("capturaDataHora","Certo... Qual o dia e horário ?");
                 },
                 async (dc, args, next) =>
                 {
-                    var resultado = ((DateTimeResult)args).Resolution.First();
+                    DateTimeResolution resultado = ((DateTimeResult)args).Resolution.First();
                     dataHora = Convert.ToDateTime(resultado.Value);
 
                     await dc.Context.SendActivity($"Está marcado. Dia {dataHora.ToString("dd/MM/yyyy HH:mm:ss")}");
@@ -50,15 +51,15 @@ namespace ExemploDialogo
                 },
             });
 
-            dialogos.Add("dataHora", new Microsoft.Bot.Builder.Dialogs.DateTimePrompt(Culture.Portuguese));
-            dialogos.Add("texto", new Microsoft.Bot.Builder.Dialogs.TextPrompt());
+            dialogos.Add("capturaDataHora", new Microsoft.Bot.Builder.Dialogs.DateTimePrompt(Culture.Portuguese));
+            dialogos.Add("capturaTexto", new Microsoft.Bot.Builder.Dialogs.TextPrompt());
         }
 
         public async Task OnTurn(ITurnContext context)
         {
 
-            var state = ConversationState<Dictionary<string, object>>.Get(context);
-            var dc = dialogos.CreateContext(context, state);
+            Dictionary<string, object> state = ConversationState<Dictionary<string, object>>.Get(context);
+            DialogContext dc = dialogos.CreateContext(context, state);
             await dc.Continue();
 
             if (context.Activity.Type == ActivityTypes.Message)
