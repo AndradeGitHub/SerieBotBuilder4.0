@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Bot.Builder.Ai.LUIS;
 using Microsoft.Bot.Builder.BotFramework;
 using Microsoft.Bot.Builder.Core.Extensions;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
@@ -64,6 +65,13 @@ namespace ExemploDialogo
                 // IStorage dataStore = new Microsoft.Bot.Builder.Azure.AzureBlobStorage("AzureBlobConnectionString", "containerName");
 
                 options.Middleware.Add(new ConversationState<Dictionary<string, object>>(dataStore));
+
+                options.Middleware.Add(new LuisRecognizerMiddleware(
+                    new LuisModel("caeeeb17-b193-4c4b-ab17-f505476b2169",
+                    "0389cbe994bd47659992b557f0c0d421",
+                    new Uri("https://westus.api.cognitive.microsoft.com/luis/v2.0/apps/caeeeb17-b193-4c4b-ab17-f505476b2169?subscription-key=0389cbe994bd47659992b557f0c0d421&verbose=true&timezoneOffset=0&q="),
+                    Microsoft.Cognitive.LUIS.LuisApiVersion.V2)
+                    ));
             });
         }
 

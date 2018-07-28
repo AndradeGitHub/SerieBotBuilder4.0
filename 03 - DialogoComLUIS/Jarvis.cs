@@ -10,6 +10,7 @@ using System.Linq;
 using Microsoft.Recognizers.Text;
 using System.Collections.Generic;
 using static Microsoft.Bot.Builder.Prompts.DateTimeResult;
+using Microsoft.Bot.Builder.Ai.LUIS;
 
 namespace ExemploDialogo
 {
@@ -26,6 +27,7 @@ namespace ExemploDialogo
         string enderecoEntrega;
         string formaPagamento;
         string valorTroco;
+        string regiao;
 
         public Jarvis()
         {
@@ -41,6 +43,25 @@ namespace ExemploDialogo
                 async (dc, args, next) =>
                 {
                     nomeCliente = ((TextResult)args).Value;
+                    await dc.End();
+                }
+            });
+
+            // Dialogo pra previsao do tempo
+            dialogos.Add("previsaoTempo", new WaterfallStep[] {
+                async (dc, args, next) =>
+                {
+                    await dc.Begin("obterNome");
+                },
+                async (dc, args, next) =>
+                {
+                    nomeCliente = ((TextResult)args).Value;
+                    await dc.Prompt("capturaTexto",$"Qual a região ?");
+                },
+                async (dc, args, next) =>
+                {
+                    regiao = ((TextResult)args).Value;
+                    await dc.Context.SendActivity($"{nomeCliente} a previsão do tempo no {regiao} é de tempo bom.");
                     await dc.End();
                 }
             });
@@ -116,11 +137,30 @@ namespace ExemploDialogo
             DialogContext dc = dialogos.CreateContext(context, state);
             await dc.Continue();
 
+            // This bot is only handling Messages
             if (context.Activity.Type == ActivityTypes.Message)
             {
+
+                RecognizerResult resultado = context.Services.Get<RecognizerResult>(LuisRecognizerMiddleware.LuisRecognizerResultKey);
+
+                var intencaoMaisPontuada = resultado?.GetTopScoringIntent();
                 if (!context.Responded)
                 {
-                    await dc.Begin("marcarConsulta");
+                    switch ((intencaoMaisPontuada != null) ? intencaoMaisPontuada.Value.intent : null)
+                    {
+                        case "None":
+                            await context.SendActivity("Não entendi.");
+                            break;
+                        case "PedirPizza":
+                            await dc.Begin("pedirPizza");
+                            break;
+                        case "PrevisaoTempo":
+                            await dc.Begin("previsaoTempo");
+                            break;
+                        case "MarcarConsulta":
+                            await dc.Begin("marcarConsulta");
+                            break;
+                    }
                 }
             }
         }
