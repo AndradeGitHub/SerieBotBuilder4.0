@@ -67,9 +67,9 @@ namespace ExemploDialogo
                 options.Middleware.Add(new ConversationState<Dictionary<string, object>>(dataStore));
 
                 options.Middleware.Add(new LuisRecognizerMiddleware(
-                    new LuisModel("caeeeb17-b193-4c4b-ab17-f505476b2169",
+                    new LuisModel("ebd2ae44-4b8b-4026-82d5-a12344b9624c",
                     "0389cbe994bd47659992b557f0c0d421",
-                    new Uri("https://westus.api.cognitive.microsoft.com/luis/v2.0/apps/caeeeb17-b193-4c4b-ab17-f505476b2169?subscription-key=0389cbe994bd47659992b557f0c0d421&verbose=true&timezoneOffset=0&q="),
+                    new Uri("https://westus.api.cognitive.microsoft.com/luis/v2.0/apps/ebd2ae44-4b8b-4026-82d5-a12344b9624c?subscription-key=0389cbe994bd47659992b557f0c0d421&verbose=true&timezoneOffset=0&q="),
                     Microsoft.Cognitive.LUIS.LuisApiVersion.V2)
                     ));
             });
