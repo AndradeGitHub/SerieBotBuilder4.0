@@ -1,10 +1,9 @@
 ﻿using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Bot.Builder.BotFramework;
-using Microsoft.Bot.Builder.Core.Extensions;
+using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
-using Microsoft.Bot.Builder.TraceExtensions;
+using Microsoft.Bot.Connector.Authentication;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -32,24 +31,19 @@ namespace ExemploSimples
         {
             services.AddBot<BotSimples>(options =>
             {
-                options.CredentialProvider = new ConfigurationCredentialProvider(Configuration);
+                options.CredentialProvider = new SimpleCredentialProvider("", "");
 
-                // The CatchExceptionMiddleware provides a top-level exception handler for your bot. 
-                // Any exceptions thrown by other Middleware, or by your OnTurn method, will be 
-                // caught here. To facillitate debugging, the exception is sent out, via Trace, 
-                // to the emulator. Trace activities are NOT displayed to users, so in addition
-                // an "Ooops" message is sent. 
-                options.Middleware.Add(new CatchExceptionMiddleware<Exception>(async (context, exception) =>
+                options.OnTurnError = async (context, exception) =>
                 {
-                    await context.TraceActivity("BotSimples Exception", exception);
-                    await context.SendActivity("Desculpe, parece que algo deu errado.");
-                }));
+                    Console.Write($"BotSimples: {exception}");
+                    await context.SendActivityAsync("Desculpe, parece que algo deu errado.");
+                };
 
                 // The Memory Storage used here is for local bot debugging only. When the bot
                 // is restarted, anything stored in memory will be gone. 
                 IStorage dataStore = new MemoryStorage();
-                
-                options.Middleware.Add(new ConversationState<BotSimplesState>(dataStore));
+
+                //options.Middleware.Add(new ConversationState<BotSimplesState>(dataStore));
             });
         }
 

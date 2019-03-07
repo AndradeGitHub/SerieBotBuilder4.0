@@ -1,14 +1,16 @@
-﻿using System.Threading.Tasks;
-using Microsoft.Bot;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Bot.Builder;
-using Microsoft.Bot.Builder.Core.Extensions;
-using Microsoft.Bot.Builder.Prompts;
 using Microsoft.Bot.Schema;
 
 namespace ExemploSimples
 {
     public class BotSimples : IBot
     {
+
+        private static readonly MemoryStorage _myStorage = new MemoryStorage();
 
         /// <summary>
         /// Every Conversation turn for our Bot will call this method. In here
@@ -18,33 +20,56 @@ namespace ExemploSimples
         /// </summary>
         /// <param name="context">Turn scoped context containing all the data needed
         /// for processing this conversation turn. </param>        
-        public async Task OnTurn(ITurnContext context)
+        public async Task OnTurnAsync(ITurnContext context, CancellationToken cancellationToken = default(CancellationToken))
         {
             // O bot só irá tratar mensagens.
             if (context.Activity.Type == ActivityTypes.Message)
             {
                 // Obtenho o estado da conversação.
-                BotSimplesState state = context.GetConversationState<BotSimplesState>();
-                TextPrompt promptNome = new TextPrompt();
+                BotSimplesState estado = _myStorage.ReadAsync<BotSimplesState>(new string[] { "BotSimplesState" }).Result?.FirstOrDefault().Value;
 
-                if (!state.PergunteiNome)
+                if (estado is null || !estado.PergunteiNome)
                 {
-                    state.PergunteiNome = true;
-                    await promptNome.Prompt(context, "Qual o seu nome ?");
+                    estado = new BotSimplesState();
+                    estado.PergunteiNome = true;
+                    try
+                    {
+                        await _myStorage.WriteAsync(new Dictionary<string, object>(
+                            new List<KeyValuePair<string, object>>()
+                            {
+                                new KeyValuePair<string, object>("BotSimplesState", estado)
+                            }), cancellationToken);
+                    }
+                    catch
+                    {
+                        await context.SendActivityAsync("Erro ao armazenar.");
+                    }
+                    await context.SendActivityAsync("Qual o seu nome ?");
                 }
                 else
                 {
-                    TextResult nome = await promptNome.Recognize(context);
+                    var nome = context.Activity.Text;
 
-                    if (!nome.Succeeded())
+                    if (string.IsNullOrEmpty(nome))
                     {
-                        await promptNome.Prompt(context, "Desculpe, pode repetir ?");
+                        await context.SendActivityAsync("Desculpe, pode repetir ?");
                     }
                     else
                     {
-                        state.PergunteiNome = false;
-                        await context.SendActivity($"Oi {nome.Value}, seja bem vindo ao nosso chat de teste.");
-
+                        estado.PergunteiNome = false;
+                        try
+                        {
+                            await _myStorage.WriteAsync(new Dictionary<string, object>(
+                                new List<KeyValuePair<string, object>>()
+                                {
+                                new KeyValuePair<string, object>("BotSimplesState", estado)
+                                }), cancellationToken);
+                        }
+                        catch
+                        {
+                            await context.SendActivityAsync("Erro ao armazenar.");
+                        }
+                        await context.SendActivityAsync($"Oi {nome}, seja bem vindo ao nosso chat de teste.");
                     }
                 }
 
